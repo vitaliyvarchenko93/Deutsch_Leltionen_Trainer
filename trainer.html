@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Lektionen Trainer</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#dee2e6">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="stylesheet" href="css/trainer.css">
+</head>
+<body>
+
+<!-- Экран выбора уроков (появляется, если в URL нет параметра lektion) -->
+<div id="lesson-selector-overlay">
+    <div class="inner-selector-box">
+        <h2 id="selector-title"></h2>
+        <div class="lessons-grid-24" id="lessonsGridContainer"></div>
+        <a class="back-link" href="index.html">← Выбор уровня</a>
+    </div>
+</div>
+
+<div class="main-container">
+    <div class="lesson-box" id="lesson-box">
+        <a class="back-link" href="index.html">← Уровень <span id="level-badge"></span></a>
+        <select class="lesson-select" id="lesson-select" onchange="changeLesson()"></select>
+    </div>
+
+    <div class="mode-switcher" id="mode-switcher-box">
+        <button class="mode-btn active" id="btn-learn" onclick="setMode('learn')">Заучивание</button>
+        <button class="mode-btn" id="btn-test" onclick="setMode('test')">Проверка</button>
+        <button class="mode-btn" id="btn-list" onclick="setMode('list')">Список слов</button>
+    </div>
+
+    <div class="empty-screen" id="empty-screen">
+        Слова еще не внесены ❌
+    </div>
+
+    <div class="card-content" id="card-block">
+        <div class="stars-container" id="stars-block">0 ★</div>
+        
+        <div id="card-main-content">
+            <div class="counter" id="word-counter">Слово 0 из 0</div>
+            <div class="word-title" id="russian-word">Загрузка...</div>
+            <div class="hint-text" id="word-hint"></div>
+            
+            <div id="learn-block" style="display: none;">
+                <div class="learn-answer" id="learn-answer-text"></div>
+                <button class="context-trigger" id="context-btn" onclick="toggleContext()" style="display: none;">Контекст ▼</button>
+                <div class="context-block" id="context-display">
+                    <div class="context-de" id="context-text-de"></div>
+                    <div class="context-ru" id="context-text-ru"></div>
+                </div>
+            </div>
+
+            <div id="test-block" style="display: none;">
+                <div class="input-group">
+                    <label id="label-input-1">Перевод на немецкий</label>
+                    <input type="text" id="german-input-1" placeholder="Введите перевод" autocomplete="off">
+                </div>
+                <div class="input-group" id="perfekt-group" style="display: none;">
+                    <label>Форма Perfekt</label>
+                    <input type="text" id="german-input-2" placeholder="Форма Perfekt" autocomplete="off">
+                </div>
+            </div>
+
+            <div class="feedback" id="feedback-msg"></div>
+
+            <div class="buttons-group">
+                <button class="main-btn" id="action-btn" onclick="handleAction()">Проверить</button>
+                <button class="secondary-btn" id="prev-btn" onclick="prevWord()">Предыдущее слово</button>
+            </div>
+        </div>
+
+        <div id="card-results-content" class="results-block" style="display: none;">
+            <div class="results-title">Тренировка окончена!</div>
+            <div class="results-stars" id="results-stars-value">0 ★</div>
+            <div class="results-text" id="results-feedback-text">Отличный результат!</div>
+            <button class="main-btn" onclick="restartTestSession()">Повторить проверку</button>
+        </div>
+    </div>
+
+    <div class="word-list-container" id="list-block" style="display: none;">
+        <div class="filter-switcher" id="filter-switcher-box">
+            <button class="filter-btn active" id="filter-all" onclick="setFilter('all')">Все</button>
+            <button class="filter-btn" id="filter-verb" onclick="setFilter('verb')">Глаголы</button>
+            <button class="filter-btn" id="filter-noun" onclick="setFilter('noun')">Существ.</button>
+            <button class="filter-btn" id="filter-other" onclick="setFilter('other')">Другие</button>
+        </div>
+
+        <table class="word-table">
+            <thead>
+                <tr>
+                    <th class="col-num">№</th>
+                    <th class="col-de">Немецкий</th>
+                    <th>Русский</th>
+                </tr>
+            </thead>
+            <tbody id="words-table-body">
+            </tbody>
+        </table>
+    </div>
+
+    <div class="error-screen" id="error-screen">
+        Ошибка! Не найден объект базы данных <code>dictionary</code> в файле data/a1.js.
+    </div>
+</div>
+
+<script src="js/levels.js"></script>
+<script src="js/trainer.js"></script>
+</body>
+</html>
