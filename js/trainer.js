@@ -270,16 +270,62 @@
     speakGerman(text);
 }
 
-// Озвучка только системным синтезатором: работает офлайн и без внешних сервисов
+// ---- Озвучка системным синтезатором: выбираем лучший немецкий голос ----
+const VOICE_KEY = 'germanVoiceName';
+let germanVoice = null;
+
+function scoreVoice(v) {
+    const n = v.name.toLowerCase();
+    let s = 0;
+    if (/^de[-_]de$/i.test(v.lang)) s += 30;               // стандартный немецкий (не австрийский/швейцарский)
+    if (/natural|neural|premium|enhanced|studio|wavenet/.test(n)) s += 50;
+    if (/google/.test(n)) s += 40;                         // «Google Deutsch» звучит естественно
+    if (/anna|petra|markus|katja|conrad|amala|vicki|hedda|stefan|marlene/.test(n)) s += 15;
+    if (!v.localService) s += 10;
+    if (/compact|espeak|robot/.test(n)) s -= 60;           // самые «роботные»
+    return s;
+}
+
+function pickGermanVoice() {
+    if (!('speechSynthesis' in window)) return null;
+    const list = window.speechSynthesis.getVoices().filter(v => /^de([-_]|$)/i.test(v.lang));
+    if (!list.length) return null;
+    const saved = localStorage.getItem(VOICE_KEY);
+    return list.find(v => v.name === saved) || list.sort((x, y) => scoreVoice(y) - scoreVoice(x))[0];
+}
+
+function refreshVoice() { germanVoice = pickGermanVoice(); }
+
+function showToast(msg) {
+    let t = document.getElementById('toast');
+    if (!t) {
+        t = document.createElement('div');
+        t.id = 'toast';
+        t.style.cssText = 'position:fixed;left:16px;right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 24px);' +
+            'background:#212529;color:#fff;padding:14px 18px;border-radius:14px;font-size:14px;line-height:1.4;' +
+            'z-index:9999;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.25)';
+        document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.style.display = 'block';
+    clearTimeout(showToast.timer);
+    showToast.timer = setTimeout(() => { t.style.display = 'none'; }, 7000);
+}
+
 function speakGerman(text) {
-    if (!('speechSynthesis' in window)) return;
+    if (!('speechSynthesis' in window)) { showToast('Этот браузер не поддерживает озвучку.'); return; }
     window.speechSynthesis.cancel();
+    if (!germanVoice) refreshVoice();
+    if (!germanVoice) {
+        // Без немецкого голоса система читает немецкий текст русским/английским голосом — это и звучит как робот
+        showToast('На этом устройстве нет немецкого голоса. Установите его в настройках: «Синтез речи» → язык «Deutsch».');
+        return;
+    }
     setTimeout(() => {
         const u = new SpeechSynthesisUtterance(text);
-        u.lang = 'de-DE';
-        u.rate = 0.85;
-        const voice = window.speechSynthesis.getVoices().find(v => v.lang.startsWith('de'));
-        if (voice) u.voice = voice;
+        u.voice = germanVoice;
+        u.lang = germanVoice.lang;
+        u.rate = 0.9;
         window.speechSynthesis.speak(u);
     }, 100);
 }
@@ -554,17 +600,12 @@ function speakGerman(text) {
     setupEnterKey(input1);
     setupEnterKey(input2);
 
-    // Инициализация загрузки системных голосов для мобильных браузеров
+    // Голоса в браузерах подгружаются асинхронно
     if ('speechSynthesis' in window) {
-        window.speechSynthesis.getVoices();
-        if (window.speechSynthesis.onvoiceschanged !== undefined) {
-            window.speechSynthesis.onvoiceschanged = () => {
-                window.speechSynthesis.getVoices();
-            };
-        }
+        refreshVoice();
+        window.speechSynthesis.onvoiceschanged = refreshVoice;
     }
 
-    
 // ---- Инициализация: уровень берётся из ?level=, данные подгружаются из data/<level>.js ----
 (function () {
     const params = new URLSearchParams(location.search);
