@@ -29,6 +29,17 @@
     .option-card.soon { opacity: .45; pointer-events: none; }
     .option-title { font-size: 2.6rem; font-weight: 700; color: #38bdf8; margin-bottom: 10px; }
     .option-subtitle { font-size: .95rem; color: #94a3b8; }
+    @media (min-width: 701px) {
+      body { overflow: hidden; }
+      .selector-container { max-width: 620px; justify-content: center; padding-top: 24px; padding-bottom: 24px; }
+      .title { margin-bottom: 28px; }
+      .grid { flex: none; grid-auto-rows: 180px; gap: 20px; }
+    }
+    @media (min-width: 701px) and (max-height: 640px) {
+      .grid { grid-auto-rows: 130px; gap: 14px; }
+      .title { font-size: 1.4rem; margin-bottom: 18px; }
+      .option-title { font-size: 2.1rem; }
+    }
   </style>
 </head>
 <body>
