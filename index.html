@@ -30,7 +30,15 @@
     .option-card.soon { opacity: .45; pointer-events: none; }
     .option-title { font-size: 2.6rem; font-weight: 700; color: #38bdf8; margin-bottom: 8px; }
     .option-subtitle { font-size: .95rem; color: #94a3b8; }
-    .version { margin-top: 28px; font-size: .75rem; color: #475569; }
+   .version {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
+  text-align: center;
+  font-size: .75rem;
+  color: #475569;
+}
 
     /* Компьютер и планшет: крупные карточки с большими промежутками, подстраиваются под окно */
     @media (min-width: 701px) {
