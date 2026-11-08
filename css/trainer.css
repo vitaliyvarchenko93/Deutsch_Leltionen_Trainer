@@ -442,9 +442,10 @@ body {
 #card-main-content { flex: 1; display: flex; flex-direction: column; }
 #card-results-content { flex: 1; align-items: center; justify-content: center; }
 .counter { margin-bottom: 28px; font-size: 14px; }
-.word-title { font-size: 36px; margin-bottom: 14px; }
-.hint-text { font-size: 17px; margin-bottom: 24px; }
-.learn-answer { margin-top: 12px; }
+.word-title { margin-bottom: 4px !important; }
+.hint-text { margin-bottom: 4px !important; }
+.hint-text:empty { display: none !important; }
+.learn-answer { margin-top: 4px !important; margin-bottom: 0 !important; }
 .buttons-group { margin-top: auto; padding-top: 32px; gap: 14px; }
 button.main-btn, button.secondary-btn { padding: 18px 28px; font-size: 17px; }
 .feedback { margin-top: 20px; }
