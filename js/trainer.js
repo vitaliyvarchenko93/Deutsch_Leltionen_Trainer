@@ -600,6 +600,18 @@ function speakGerman(text) {
     setupEnterKey(input1);
     setupEnterKey(input2);
 
+    // Когда появляется результат ответа, прокручиваем так, чтобы кнопка «Продолжить» была видна
+    (function () {
+        const fb = document.getElementById('feedback-msg');
+        new MutationObserver(() => {
+            if (!fb.innerHTML.trim()) return;
+            setTimeout(() => {
+                const btn = document.getElementById('action-btn');
+                if (btn) btn.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            }, 60);
+        }).observe(fb, { childList: true, subtree: true });
+    })();
+
     // Голоса в браузерах подгружаются асинхронно
     if ('speechSynthesis' in window) {
         refreshVoice();
