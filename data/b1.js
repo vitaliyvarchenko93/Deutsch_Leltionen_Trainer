@@ -165,9 +165,8 @@ const dictionary = {
     { type: "other", de: "vorhin", ru: "недавно, только что (ранее)" },
     { type: "other", de: "allerdings", ru: "однако, правда" }
   ],
-    "Lektion 4: Kundenservice": [
+    "Lektion 4: «Obwohl ich Ihnen das erklärt habe, ...»: [
     // СУЩЕСТВИТЕЛЬНЫЕ
-    { type: "noun", de: "der Kundenservice", ru: "клиентская служба, служба поддержки" },
     { type: "noun", de: "die Bedienung", ru: "обслуживание" },
     { type: "noun", de: "die Qualität", ru: "качество" },
     { type: "noun", de: "die Reaktion", ru: "реакция" },
