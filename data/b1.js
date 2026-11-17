@@ -164,5 +164,53 @@ const dictionary = {
     { type: "other", de: "kürzlich", ru: "недавно, на днях" },
     { type: "other", de: "vorhin", ru: "недавно, только что (ранее)" },
     { type: "other", de: "allerdings", ru: "однако, правда" }
+  ],
+    "Lektion 4: Kundenservice": [
+    // СУЩЕСТВИТЕЛЬНЫЕ
+    { type: "noun", de: "der Kundenservice", ru: "клиентская служба, служба поддержки" },
+    { type: "noun", de: "die Bedienung", ru: "обслуживание" },
+    { type: "noun", de: "die Qualität", ru: "качество" },
+    { type: "noun", de: "die Reaktion", ru: "реакция" },
+    { type: "noun", de: "das Schreiben", ru: "письмо (официальное)" },
+    { type: "noun", de: "der Verlag", ru: "издательство" },
+    { type: "noun", de: "die Werbung", ru: "реклама" },
+    { type: "noun", de: "die Durchwahl", ru: "добавочный номер (телефонный)" },
+    { type: "noun", de: "die Taste", ru: "клавиша, кнопка" },
+    { type: "noun", de: "die Abteilung", ru: "отдел" },
+    { type: "noun", de: "das Datum", ru: "дата" },
+    { type: "noun", de: "die Jugend", ru: "молодежь, молодость" },
+    { type: "noun", de: "die Kopie", ru: "копия" },
+    { type: "noun", de: "der Apparat", ru: "аппарат, телефонный аппарат" },
+    { type: "noun", de: "die Ansage", ru: "автоответчик, объявление" },
+    { type: "noun", de: "der Anschluss", ru: "соединение, подключение" },
+    { type: "noun", de: "die Auskunft", ru: "справка, справочная" },
+
+    // ГЛАГОЛЫ
+    { type: "verb", de: "abonnieren", perfekt: "hat abonniert", ru: "оформлять подписку, подписываться", context: { de: "Er hat eine Zeitschrift abonniert.", ru: "Он подписался на журнал." } },
+    { type: "verb", de: "auf·fordern", perfekt: "hat aufgefordert", ru: "призывать, требовать", context: { de: "Sie hat ihn aufgefordert, zu gehen.", ru: "Она потребовала от него уйти." } },
+    { type: "verb", de: "bedienen", perfekt: "hat bedient", ru: "обслуживать, управлять", context: { de: "Wer bedient diesen Kunden?", ru: "Кто обслуживает этого клиента?" } },
+    { type: "verb", de: "behalten", perfekt: "hat behalten", ru: "сохранять, оставлять у себя", context: { de: "Du kannst das Buch behalten.", ru: "Можешь оставить эту книгу себе." } },
+    { type: "verb", de: "enttäuschen", perfekt: "hat enttäuscht", ru: "разочаровывать", context: { de: "Sein Verhalten hat mich enttäuscht.", ru: "Его поведение меня разочаровало." } },
+    { type: "verb", de: "erhalten", perfekt: "hat erhalten", ru: "получать", context: { de: "Ich habe deinen Brief erhalten.", ru: "Я получил твое письмо." } },
+    { type: "verb", de: "senden", perfekt: "hat gesendet", ru: "отправлять, посылать", context: { de: "Sie hat ein Paket gesendet.", ru: "Она отправила посылку." } },
+    { type: "verb", de: "bereit·halten", perfekt: "hat bereitgehalten", ru: "держать наготове, подготавливать", context: { de: "Bitte halten Sie Ihre Unterlagen bereit.", ru: "Пожалуйста, подготовьте свои документы." } },
+    { type: "verb", de: "drücken", perfekt: "hat gedrückt", ru: "нажимать", context: { de: "Drücken Sie diesen Knopf.", ru: "Нажмите эту кнопку." } },
+    { type: "verb", de: "verbinden", perfekt: "hat verbunden", ru: "соединять", context: { de: "Können Sie mich mit Herrn Müller verbinden?", ru: "Можете соединить меня с господином Мюллером?" } },
+    { type: "verb", de: "zurück·rufen", perfekt: "hat zurückgerufen", ru: "перезванивать", context: { de: "Ich werde Sie später zurückrufen.", ru: "Я перезвоню вам позже." } },
+    { type: "verb", de: "speichern", perfekt: "hat gespeichert", ru: "сохранять (данные)", context: { de: "Er hat die Datei auf dem Computer gespeichert.", ru: "Он сохранил файл на компьютере." } },
+
+    // ДРУГИЕ ЧАСТИ РЕЧИ И ФРАЗЫ
+    { type: "other", de: "-fach", ru: "-кратный (суффикс)" },
+    { type: "other", de: "sogar", ru: "даже" },
+    { type: "other", de: "statt", ru: "вместо" },
+    { type: "other", de: "bereit", ru: "готовый" },
+    { type: "other", de: "automatisch", ru: "автоматически" },
+    { type: "other", de: "besetzt", ru: "занято (о телефоне/месте)" },
+    { type: "other", de: "außer Haus", ru: "вне дома, вне офиса" },
+    { type: "other", de: "blass", ru: "бледный" },
+    { type: "other", de: "voll", ru: "полный" },
+    { type: "other", de: "selbstverständlich", ru: "само собой разумеющийся, конечно" },
+    { type: "other", de: "obwohl", ru: "хотя" },
+    { type: "other", de: "trotzdem", ru: "несмотря на это, тем не менее" }
   ]
 };
