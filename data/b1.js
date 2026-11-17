@@ -165,7 +165,7 @@ const dictionary = {
     { type: "other", de: "vorhin", ru: "недавно, только что (ранее)" },
     { type: "other", de: "allerdings", ru: "однако, правда" }
   ],
-    "Lektion 4: «Obwohl ich Ihnen das erklärt habe, ...»": [
+    ""Lektion 4: «Obwohl ich Ihnen das erklärt habe, ...»": [
     // СУЩЕСТВИТЕЛЬНЫЕ
     { type: "noun", de: "die Bedienung", ru: "обслуживание" },
     { type: "noun", de: "die Qualität", ru: "качество" },
