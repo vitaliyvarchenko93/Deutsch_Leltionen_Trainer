@@ -1,5 +1,5 @@
 const dictionary = {
-  "Lektion 1: Zusammenleben": [
+  "Lektion 1: Ihr seid einfach die Besten!": [
     // СУЩЕСТВИТЕЛЬНЫЕ
     { type: "noun", de: "das Abenteuer", ru: "приключение" },
     { type: "noun", de: "die Abenteuerlust", ru: "жажда приключений" },
@@ -46,7 +46,7 @@ const dictionary = {
     { type: "other", de: "diesmal", ru: "в этот раз" },
     { type: "other", de: "ebenso", ru: "также" }
   ],
-  "Lektion 2: Arbeit und Beruf": [
+  "Lektion 2: Er erledigte seine Aufgaben zuverlässig.": [
     // СУЩЕСТВИТЕЛЬНЫЕ
     { type: "noun", de: "der Auszubildende", ru: "учащийся, стажёр (мужского пола)" },
     { type: "noun", de: "die Auszubildende", ru: "учащаяся, стажёрка (женского пола)" },
