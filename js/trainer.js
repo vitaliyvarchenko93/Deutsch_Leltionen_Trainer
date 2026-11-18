@@ -141,7 +141,6 @@
         if (rawList.length === 0) {
             const found = Object.keys(dictionary).filter(k => dictionary[k].length).map(k => `${(parseLessonKey(k) || {}).num || k} (${dictionary[k].length})`);
             emptyScreen.innerHTML = 'Слова еще не внесены ❌' +
-                `<div style="font-size:13px;margin-top:10px;color:#6c757d">В файле данных есть уроки: ${found.join(', ') || 'ни одного'} (в скобках — число слов)</div>`;
             emptyScreen.style.display = 'block';
             cardBlock.style.display = 'none';
             listBlock.style.display = 'none';
