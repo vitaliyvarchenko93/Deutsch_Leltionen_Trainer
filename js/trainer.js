@@ -140,7 +140,7 @@
 
         if (rawList.length === 0) {
             const found = Object.keys(dictionary).filter(k => dictionary[k].length).map(k => `${(parseLessonKey(k) || {}).num || k} (${dictionary[k].length})`);
-            emptyScreen.innerHTML = 'Слова еще не внесены ❌' +
+            emptyScreen.innerHTML = 'Слова еще не внесены ❌' 
             emptyScreen.style.display = 'block';
             cardBlock.style.display = 'none';
             listBlock.style.display = 'none';
