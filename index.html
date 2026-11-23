@@ -30,15 +30,58 @@
     .option-card.soon { opacity: .45; pointer-events: none; }
     .option-title { font-size: 2.6rem; font-weight: 700; color: #38bdf8; margin-bottom: 8px; }
     .option-subtitle { font-size: .95rem; color: #94a3b8; }
-   .version {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
-  text-align: center;
-  font-size: .75rem;
-  color: #ffffff;
-}
+
+    .version {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
+      text-align: center;
+      font-size: .75rem;
+      color: #ffffff;
+    }
+
+    /* ===== Меню-«бургер» в правом верхнем углу ===== */
+    .menu-btn {
+      position: fixed;
+      top: calc(env(safe-area-inset-top, 0px) + 14px);
+      right: 16px;
+      width: 48px; height: 48px;
+      background: #1e293b; border: 2px solid #334155; border-radius: 14px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
+      cursor: pointer; z-index: 30; transition: all .2s ease;
+    }
+    .menu-btn span {
+      display: block; width: 22px; height: 3px; border-radius: 2px; background: #f1f5f9;
+      transition: transform .2s ease, opacity .2s ease;
+    }
+    .menu-btn:hover, .menu-btn:active, .menu-btn.open { border-color: #38bdf8; background: #243248; }
+    .menu-btn.open span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+    .menu-btn.open span:nth-child(2) { opacity: 0; }
+    .menu-btn.open span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+
+    .menu-backdrop { position: fixed; inset: 0; z-index: 20; display: none; }
+    .menu-backdrop.open { display: block; }
+
+    .menu-list {
+      position: fixed;
+      top: calc(env(safe-area-inset-top, 0px) + 70px);
+      right: 16px;
+      min-width: 240px; max-width: calc(100vw - 32px);
+      background: #1e293b; border: 2px solid #334155; border-radius: 18px;
+      padding: 8px; z-index: 25;
+      box-shadow: 0 20px 40px -10px rgba(0,0,0,.6);
+      display: none;
+    }
+    .menu-list.open { display: block; }
+    .menu-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 14px; border-radius: 12px;
+      color: #f1f5f9; text-decoration: none; font-size: 1.05rem; font-weight: 600;
+    }
+    .menu-item:hover, .menu-item:active { background: #243248; }
+    .menu-item .ico { font-size: 1.3rem; }
+    .menu-item small { display: block; font-size: .78rem; font-weight: 400; color: #94a3b8; margin-top: 2px; }
 
     /* Компьютер и планшет: крупные карточки с большими промежутками, подстраиваются под окно */
     @media (min-width: 701px) {
@@ -54,14 +97,48 @@
   </style>
 </head>
 <body>
+  <!-- Меню -->
+  <button class="menu-btn" id="menu-btn" aria-label="Меню" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="menu-backdrop" id="menu-backdrop"></div>
+  <nav class="menu-list" id="menu-list"></nav>
+
   <div class="selector-container">
     <h1 class="title">Выбор уровня тренажера</h1>
     <div class="grid" id="levels-grid"></div>
-    <div class="version">Version 15</div>
+    <div class="version">Version 17</div>
   </div>
 
   <script src="js/levels.js"></script>
   <script>
+    // ---------- Пункты меню: чтобы добавить новый, допишите строку ----------
+    const MENU_ITEMS = [
+      { icon: '🃏', title: 'Карточки по частям речи', sub: 'A1–B1', href: 'cards.html' }
+      // { icon: '📊', title: 'Статистика', sub: '', href: 'stats.html' },
+    ];
+
+    const menuBtn = document.getElementById('menu-btn');
+    const menuList = document.getElementById('menu-list');
+    const menuBackdrop = document.getElementById('menu-backdrop');
+
+    menuList.innerHTML = MENU_ITEMS.map(m =>
+      `<a class="menu-item" href="${m.href}">
+         <span class="ico">${m.icon}</span>
+         <span>${m.title}${m.sub ? `<small>${m.sub}</small>` : ''}</span>
+       </a>`).join('');
+
+    function setMenu(open) {
+      menuBtn.classList.toggle('open', open);
+      menuList.classList.toggle('open', open);
+      menuBackdrop.classList.toggle('open', open);
+      menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+    menuBtn.addEventListener('click', () => setMenu(!menuList.classList.contains('open')));
+    menuBackdrop.addEventListener('click', () => setMenu(false));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') setMenu(false); });
+
+    // ---------- Уровни ----------
     const grid = document.getElementById('levels-grid');
     Object.entries(window.LEVELS).forEach(([id, lv]) => {
       const a = document.createElement('a');
@@ -71,6 +148,7 @@
                      <div class="option-subtitle">${lv.soon ? 'Скоро' : 'Lektionen Trainer ' + lv.name}</div>`;
       grid.appendChild(a);
     });
+
     if ('serviceWorker' in navigator) {
       const hadController = !!navigator.serviceWorker.controller;
       navigator.serviceWorker.register('sw.js');
