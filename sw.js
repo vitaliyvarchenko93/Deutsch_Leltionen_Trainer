@@ -1,5 +1,5 @@
 // Версию меняйте при изменении списка файлов или структуры проекта
-const CACHE = 'lektionen-v17';
+const CACHE = 'lektionen-v19';
 const ASSETS = [
   './', './index.html', './trainer.html', './cards.html', './manifest.json',
   './css/trainer.css', './css/cards.css',
