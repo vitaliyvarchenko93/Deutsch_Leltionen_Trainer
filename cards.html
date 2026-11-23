@@ -30,16 +30,10 @@
         <div class="group-title">Уровни</div>
         <div class="chips" id="lvl-chips"></div>
 
-        <label class="check">
-            <input type="checkbox" id="hide-known">
-            <span>Не показывать выученные</span>
-        </label>
-
         <div class="info" id="setup-info"></div>
 
         <div class="spacer"></div>
         <button class="main-btn" id="start-btn" disabled>Начать</button>
-        <button class="link-btn" id="reset-btn">Сбросить прогресс «выучено»</button>
     </section>
 
     <!-- Экран карточек -->
@@ -47,7 +41,7 @@
         <div class="topbar">
             <button class="icon-btn" id="exit-btn" title="Выйти">←</button>
             <div class="counter" id="counter"></div>
-            <button class="icon-btn" id="undo-btn" title="Отменить">↶</button>
+            <span class="icon-btn" style="visibility:hidden"></span>
         </div>
         <div class="progress"><div class="progress-bar" id="progress-bar"></div></div>
 
@@ -70,8 +64,6 @@
                         </div>
                     </div>
                 </div>
-                <div class="stamp stamp-know" id="stamp-know">ЗНАЮ</div>
-                <div class="stamp stamp-no" id="stamp-no">НЕ ЗНАЮ</div>
             </div>
         </div>
     </section>
