@@ -1,90 +1,161 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Карточки · Lektionen Trainer</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#dee2e6">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <link rel="apple-touch-icon" href="icons/icon-192.png">
-    <link rel="stylesheet" href="css/cards.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Lektionen Trainer — Выбор уровня</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f172a">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+    html, body { height: 100%; }
+    body { background: #0f172a; color: #f8fafc; }
+
+    /* Телефон: квадратные карточки по центру экрана */
+    .selector-container {
+      width: 100%; max-width: 560px; height: 100%; margin: 0 auto; text-align: center;
+      display: flex; flex-direction: column; justify-content: center;
+      padding: calc(env(safe-area-inset-top, 0px) + 24px) 22px calc(env(safe-area-inset-bottom, 0px) + 24px);
+    }
+    .title { font-size: 1.7rem; font-weight: 600; margin-bottom: 28px; color: #f1f5f9; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .option-card { aspect-ratio: 1 / 1; background: #1e293b; border: 2px solid #334155; border-radius: 22px;
+                   padding: 16px; transition: all .2s ease; user-select: none;
+                   text-decoration: none; display: flex; flex-direction: column;
+                   align-items: center; justify-content: center; }
+    .option-card:hover, .option-card:active { border-color: #38bdf8; background: #243248;
+                         box-shadow: 0 10px 25px -5px rgba(56,189,248,.25); }
+    .option-card.soon { opacity: .45; pointer-events: none; }
+    .option-title { font-size: 2.6rem; font-weight: 700; color: #38bdf8; margin-bottom: 8px; }
+    .option-subtitle { font-size: .95rem; color: #94a3b8; }
+
+    .version {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
+      text-align: center;
+      font-size: .75rem;
+      color: #ffffff;
+    }
+
+    /* ===== Меню-«бургер» в правом верхнем углу ===== */
+    .menu-btn {
+      position: fixed;
+      top: calc(env(safe-area-inset-top, 0px) + 14px);
+      right: 16px;
+      width: 48px; height: 48px;
+      background: #1e293b; border: 2px solid #334155; border-radius: 14px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
+      cursor: pointer; z-index: 30; transition: all .2s ease;
+    }
+    .menu-btn span {
+      display: block; width: 22px; height: 3px; border-radius: 2px; background: #f1f5f9;
+      transition: transform .2s ease, opacity .2s ease;
+    }
+    .menu-btn:hover, .menu-btn:active, .menu-btn.open { border-color: #38bdf8; background: #243248; }
+    .menu-btn.open span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+    .menu-btn.open span:nth-child(2) { opacity: 0; }
+    .menu-btn.open span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+
+    .menu-backdrop { position: fixed; inset: 0; z-index: 20; display: none; }
+    .menu-backdrop.open { display: block; }
+
+    .menu-list {
+      position: fixed;
+      top: calc(env(safe-area-inset-top, 0px) + 70px);
+      right: 16px;
+      min-width: 240px; max-width: calc(100vw - 32px);
+      background: #1e293b; border: 2px solid #334155; border-radius: 18px;
+      padding: 8px; z-index: 25;
+      box-shadow: 0 20px 40px -10px rgba(0,0,0,.6);
+      display: none;
+    }
+    .menu-list.open { display: block; }
+    .menu-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 14px; border-radius: 12px;
+      color: #f1f5f9; text-decoration: none; font-size: 1.05rem; font-weight: 600;
+    }
+    .menu-item:hover, .menu-item:active { background: #243248; }
+    .menu-item .ico { font-size: 1.3rem; }
+    .menu-item small { display: block; font-size: .78rem; font-weight: 400; color: #94a3b8; margin-top: 2px; }
+
+    /* Компьютер и планшет: крупные карточки с большими промежутками, подстраиваются под окно */
+    @media (min-width: 701px) {
+      body { overflow: hidden; }
+      .selector-container { max-width: clamp(560px, 56vw, 900px); padding: 16px 24px; }
+      .title { font-size: clamp(1.4rem, 4dvh, 2.2rem); margin-bottom: clamp(16px, 4dvh, 40px); }
+      .grid { gap: clamp(16px, 3.4dvh, 32px); }
+      .option-card { aspect-ratio: auto; height: clamp(130px, 27dvh, 280px); border-radius: 26px; }
+      .option-title { font-size: clamp(2rem, 6.5dvh, 3.4rem); }
+      .option-subtitle { font-size: clamp(.9rem, 2.2dvh, 1.1rem); }
+      .version { margin-top: clamp(14px, 3dvh, 30px); }
+    }
+  </style>
 </head>
 <body>
-<div class="app">
+  <!-- Меню -->
+  <button class="menu-btn" id="menu-btn" aria-label="Меню" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="menu-backdrop" id="menu-backdrop"></div>
+  <nav class="menu-list" id="menu-list"></nav>
 
-    <!-- Экран настроек -->
-    <section id="setup" class="screen">
-        <a class="back-link" href="index.html">← Выбор уровня</a>
-        <h1>Карточки</h1>
+  <div class="selector-container">
+    <h1 class="title">Выбор уровня тренажера</h1>
+    <div class="grid" id="levels-grid"></div>
+    <div class="version">Version 17</div>
+  </div>
 
-        <div class="group-title">Часть речи</div>
-        <select class="cat-select" id="cat-select">
-            <option value="verb">Глаголы</option>
-            <option value="noun">Существительные</option>
-            <option value="other">Другие</option>
-            <option value="all">Все</option>
-        </select>
+  <script src="js/levels.js"></script>
+  <script>
+    // ---------- Пункты меню: чтобы добавить новый, допишите строку ----------
+    const MENU_ITEMS = [
+      { icon: '🃏', title: 'Карточки по частям речи', sub: 'A1–B1', href: 'cards.html' }
+      // { icon: '📊', title: 'Статистика', sub: '', href: 'stats.html' },
+    ];
 
-        <div class="group-title">Уровни</div>
-        <div class="chips" id="lvl-chips"></div>
+    const menuBtn = document.getElementById('menu-btn');
+    const menuList = document.getElementById('menu-list');
+    const menuBackdrop = document.getElementById('menu-backdrop');
 
-        <div class="info" id="setup-info"></div>
+    menuList.innerHTML = MENU_ITEMS.map(m =>
+      `<a class="menu-item" href="${m.href}">
+         <span class="ico">${m.icon}</span>
+         <span>${m.title}${m.sub ? `<small>${m.sub}</small>` : ''}</span>
+       </a>`).join('');
 
-        <div class="spacer"></div>
-        <button class="main-btn" id="start-btn" disabled>Начать</button>
-    </section>
+    function setMenu(open) {
+      menuBtn.classList.toggle('open', open);
+      menuList.classList.toggle('open', open);
+      menuBackdrop.classList.toggle('open', open);
+      menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+    menuBtn.addEventListener('click', () => setMenu(!menuList.classList.contains('open')));
+    menuBackdrop.addEventListener('click', () => setMenu(false));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') setMenu(false); });
 
-    <!-- Экран карточек -->
-    <section id="play" class="screen" hidden>
-        <div class="topbar">
-            <button class="icon-btn" id="exit-btn" title="Выйти">←</button>
-            <div class="counter" id="counter"></div>
-            <span class="icon-btn" style="visibility:hidden"></span>
-        </div>
-        <div class="progress"><div class="progress-bar" id="progress-bar"></div></div>
+    // ---------- Уровни ----------
+    const grid = document.getElementById('levels-grid');
+    Object.entries(window.LEVELS).forEach(([id, lv]) => {
+      const a = document.createElement('a');
+      a.className = 'option-card' + (lv.soon ? ' soon' : '');
+      if (!lv.soon) a.href = `trainer.html?level=${id}`;
+      a.innerHTML = `<div class="option-title">${lv.name}</div>
+                     <div class="option-subtitle">${lv.soon ? 'Скоро' : 'Lektionen Trainer ' + lv.name}</div>`;
+      grid.appendChild(a);
+    });
 
-        <div class="stage">
-            <div class="card-wrap" id="card-wrap">
-                <div class="card-inner" id="card-inner">
-                    <div class="face front">
-                        <div class="tag" id="front-tag"></div>
-                        <div class="ru" id="front-ru"></div>
-                        <div class="sub" id="front-hint"></div>
-                    </div>
-                    <div class="face back">
-                        <div class="tag" id="back-tag"></div>
-                        <div class="de" id="back-de"></div>
-                        <div class="perfekt" id="back-perfekt"></div>
-                        <button class="audio-btn" id="audio-btn" title="Прослушать">🔊</button>
-                        <div class="ctx" id="back-ctx">
-                            <div class="ctx-de" id="ctx-de"></div>
-                            <div class="ctx-ru" id="ctx-ru"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Экран результата -->
-    <section id="done" class="screen" hidden>
-        <div class="done-box">
-            <div class="done-emoji">🎉</div>
-            <h1>Колода пройдена!</h1>
-            <div class="info" id="done-info"></div>
-        </div>
-        <button class="main-btn" id="again-btn">Ещё раз</button>
-        <button class="link-btn" id="to-setup-btn">К выбору слов</button>
-    </section>
-
-</div>
-
-<script src="js/levels.js"></script>
-<script src="js/cards.js"></script>
-<script>
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
-</script>
+    if ('serviceWorker' in navigator) {
+      const hadController = !!navigator.serviceWorker.controller;
+      navigator.serviceWorker.register('sw.js');
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (hadController && !window.__reloaded) { window.__reloaded = true; location.reload(); }
+      });
+    }
+  </script>
 </body>
 </html>
