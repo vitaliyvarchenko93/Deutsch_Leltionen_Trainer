@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Карточки · Lektionen Trainer</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#dee2e6">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="stylesheet" href="css/cards.css">
+</head>
+<body>
+<div class="app">
+
+    <!-- Экран настроек -->
+    <section id="setup" class="screen">
+        <a class="back-link" href="index.html">← Выбор уровня</a>
+        <h1>Карточки</h1>
+
+        <div class="group-title">Часть речи</div>
+        <select class="cat-select" id="cat-select">
+            <option value="verb">Глаголы</option>
+            <option value="noun">Существительные</option>
+            <option value="other">Другие</option>
+            <option value="all">Все</option>
+        </select>
+
+        <div class="group-title">Уровни</div>
+        <div class="chips" id="lvl-chips"></div>
+
+        <label class="check">
+            <input type="checkbox" id="hide-known">
+            <span>Не показывать выученные</span>
+        </label>
+
+        <div class="info" id="setup-info"></div>
+
+        <div class="spacer"></div>
+        <button class="main-btn" id="start-btn" disabled>Начать</button>
+        <button class="link-btn" id="reset-btn">Сбросить прогресс «выучено»</button>
+    </section>
+
+    <!-- Экран карточек -->
+    <section id="play" class="screen" hidden>
+        <div class="topbar">
+            <button class="icon-btn" id="exit-btn" title="Выйти">←</button>
+            <div class="counter" id="counter"></div>
+            <button class="icon-btn" id="undo-btn" title="Отменить">↶</button>
+        </div>
+        <div class="progress"><div class="progress-bar" id="progress-bar"></div></div>
+
+        <div class="stage">
+            <div class="card-wrap" id="card-wrap">
+                <div class="card-inner" id="card-inner">
+                    <div class="face front">
+                        <div class="tag" id="front-tag"></div>
+                        <div class="ru" id="front-ru"></div>
+                        <div class="sub" id="front-hint"></div>
+                    </div>
+                    <div class="face back">
+                        <div class="tag" id="back-tag"></div>
+                        <div class="de" id="back-de"></div>
+                        <div class="perfekt" id="back-perfekt"></div>
+                        <button class="audio-btn" id="audio-btn" title="Прослушать">🔊</button>
+                        <div class="ctx" id="back-ctx">
+                            <div class="ctx-de" id="ctx-de"></div>
+                            <div class="ctx-ru" id="ctx-ru"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="stamp stamp-know" id="stamp-know">ЗНАЮ</div>
+                <div class="stamp stamp-no" id="stamp-no">НЕ ЗНАЮ</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Экран результата -->
+    <section id="done" class="screen" hidden>
+        <div class="done-box">
+            <div class="done-emoji">🎉</div>
+            <h1>Колода пройдена!</h1>
+            <div class="info" id="done-info"></div>
+        </div>
+        <button class="main-btn" id="again-btn">Ещё раз</button>
+        <button class="link-btn" id="to-setup-btn">К выбору слов</button>
+    </section>
+
+</div>
+
+<script src="js/levels.js"></script>
+<script src="js/cards.js"></script>
+<script>
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+</script>
+</body>
+</html>
