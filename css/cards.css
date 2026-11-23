@@ -1,0 +1,163 @@
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+[hidden] { display: none !important; }
+
+html, body { height: 100%; margin: 0; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #dee2e6;
+    color: #212529;
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+}
+.app {
+    height: 100%;
+    max-width: 560px;
+    margin: 0 auto;
+    padding: calc(env(safe-area-inset-top, 0px) + 20px) 20px calc(env(safe-area-inset-bottom, 0px) + 20px);
+}
+.screen { height: 100%; display: flex; flex-direction: column; }
+.spacer { flex: 1; }
+
+h1 { font-size: 28px; margin: 4px 0 20px; }
+.back-link { color: #495057; text-decoration: none; font-size: 16px; padding: 6px 0; display: inline-block; }
+.back-link:hover { color: #198754; }
+
+.group-title {
+    font-size: 12px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .5px; color: #6c757d; margin: 18px 0 8px;
+}
+.chips { display: flex; flex-wrap: wrap; gap: 10px; }
+.chip {
+    border: 1.5px solid transparent; background: rgba(255,255,255,.7);
+    padding: 14px 18px; border-radius: 16px; font: inherit; font-size: 16px;
+    font-weight: 700; color: #495057; cursor: pointer;
+}
+.chip.active { background: #198754; color: #fff; }
+
+.check { display: flex; align-items: center; gap: 12px; margin-top: 24px; font-size: 16px; font-weight: 600; cursor: pointer; }
+.check input { width: 22px; height: 22px; accent-color: #198754; }
+
+.info { margin-top: 20px; font-size: 15px; font-weight: 600; color: #495057; line-height: 1.5; }
+
+button { font-family: inherit; }
+.main-btn {
+    background: #198754; color: #fff; border: none; border-radius: 16px;
+    padding: 18px; font-size: 17px; font-weight: 700; width: 100%; cursor: pointer;
+}
+.main-btn:disabled { background: #9bc9b3; cursor: default; }
+.main-btn:active:not(:disabled) { transform: scale(.99); }
+.link-btn {
+    background: none; border: none; color: #6c757d; font-size: 14px;
+    padding: 16px; margin-top: 4px; cursor: pointer; text-decoration: underline;
+}
+
+/* ===== Карточки ===== */
+.topbar { display: flex; align-items: center; justify-content: space-between; }
+.icon-btn {
+    width: 44px; height: 44px; border-radius: 50%; border: none;
+    background: rgba(255,255,255,.7); font-size: 22px; color: #495057; cursor: pointer;
+}
+.counter { font-size: 14px; font-weight: 700; color: #495057; text-transform: uppercase; letter-spacing: .5px; }
+.progress { height: 6px; background: rgba(0,0,0,.08); border-radius: 99px; margin: 14px 0 6px; overflow: hidden; }
+.progress-bar { height: 100%; width: 0; background: #198754; transition: width .3s ease; }
+
+.stage { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 10px 0; }
+.card-wrap {
+    position: relative; width: 100%; height: min(100%, 460px);
+    perspective: 1200px; touch-action: pan-y; user-select: none; -webkit-user-select: none;
+    cursor: grab; will-change: transform;
+}
+.card-inner {
+    position: absolute; inset: 0; transform-style: preserve-3d;
+    transition: transform .45s cubic-bezier(.3,.7,.3,1);
+}
+.card-inner.flipped { transform: rotateY(180deg); }
+
+.face {
+    position: absolute; inset: 0; border-radius: 28px; padding: 28px 22px;
+    backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; box-shadow: 0 12px 30px rgba(0,0,0,.08); overflow-y: auto;
+}
+.front { background: #fff; }
+.back { background: #f1faf5; transform: rotateY(180deg); }
+
+.tag {
+    position: absolute; top: 18px; left: 0; right: 0; font-size: 12px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .6px; color: #adb5bd;
+}
+.ru { font-size: clamp(28px, 8vw, 38px); font-weight: 700; line-height: 1.25; word-break: break-word; }
+.sub { margin-top: 10px; font-size: 16px; color: #6c757d; font-weight: 600; }
+.sub:empty { display: none; }
+.tap-note { position: absolute; bottom: 18px; left: 0; right: 0; font-size: 13px; color: #adb5bd; font-weight: 600; }
+
+.de { font-size: clamp(26px, 7.5vw, 34px); font-weight: 700; line-height: 1.25; word-break: break-word; }
+.perfekt { margin-top: 6px; font-size: 20px; font-weight: 700; color: #198754; }
+.perfekt:empty { display: none; }
+.audio-btn {
+    margin-top: 10px; background: rgba(0,0,0,.05); border: none; border-radius: 50%;
+    width: 48px; height: 48px; font-size: 22px; cursor: pointer;
+}
+.ctx { margin-top: 18px; text-align: left; width: 100%; background: #fff; border-left: 4px solid #0d6efd; border-radius: 10px; padding: 12px 14px; }
+.ctx-de { font-weight: 700; font-size: 15px; }
+.ctx-ru { color: #6c757d; font-style: italic; font-size: 14px; margin-top: 2px; }
+
+.stamp {
+    position: absolute; top: 28px; padding: 6px 14px; border: 3px solid; border-radius: 10px;
+    font-size: 22px; font-weight: 800; letter-spacing: 1px; opacity: 0; pointer-events: none; z-index: 5;
+}
+.stamp-know { left: 22px; color: #198754; transform: rotate(-12deg); }
+.stamp-no { right: 22px; color: #dc3545; transform: rotate(12deg); }
+
+.swipe-hint { text-align: center; font-size: 13px; color: #868e96; font-weight: 600; margin-bottom: 10px; }
+.actions { display: flex; gap: 12px; }
+.act { flex: 1; border: none; border-radius: 16px; padding: 18px 10px; font-size: 17px; font-weight: 700; cursor: pointer; }
+.act-no { background: #fff; color: #dc3545; }
+.act-know { background: #198754; color: #fff; }
+.act:active { transform: scale(.98); }
+
+/* ===== Результат ===== */
+.done-box { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.done-emoji { font-size: 64px; }
+.done-box h1 { margin-bottom: 8px; }
+
+@media (min-width: 701px) {
+    .app { padding-top: 40px; padding-bottom: 40px; }
+}
+
+/* Выпадающий список части речи (стиль как в тренажёре) */
+.cat-select {
+    width: 100%;
+    padding: 18px 52px 18px 20px;
+    border-radius: 16px;
+    border: none;
+    background: rgba(255, 255, 255, 0.8);
+    font-size: 17px;
+    font-weight: 700;
+    font-family: inherit;
+    color: #212529;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23495057' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
+    background-repeat: no-repeat;
+    background-position: right 18px center;
+}
+
+/* Без кнопок внизу карточка выше */
+.card-wrap { height: min(100%, 620px); }
+.stage { padding: 14px 0 6px; }
+/* Фикс свайпов: браузер не должен перехватывать жесты на карточке */
+.card-wrap,
+.card-wrap * {
+    touch-action: none;
+}
+.face {
+    overflow: hidden;
+}
+.card-wrap img,
+.card-wrap * {
+    -webkit-user-drag: none;
+    -webkit-touch-callout: none;
+}
