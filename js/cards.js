@@ -3,7 +3,6 @@
 
     const LEVELS = window.LEVELS || {};
     const LEVEL_IDS = Object.keys(LEVELS).filter(id => !LEVELS[id].soon);
-    const KNOWN_KEY = 'cards_known_v1';
     const SET_KEY = 'cards_settings_v1';
     const $ = id => document.getElementById(id);
 
@@ -12,9 +11,8 @@
         catch (e) { return def; }
     }
 
-    let known = new Set(load(KNOWN_KEY, []));
-    const saveKnown = () => localStorage.setItem(KNOWN_KEY, JSON.stringify([...known]));
-    let settings = Object.assign({ cat: 'verb', levels: LEVEL_IDS.slice(), hideKnown: false }, load(SET_KEY, {}));
+    let settings = Object.assign({ cat: 'verb', levels: LEVEL_IDS.slice() }, load(SET_KEY, {}));
+    if (!['verb', 'noun', 'other', 'all'].includes(settings.cat)) settings.cat = 'verb';
     settings.levels = (settings.levels || []).filter(id => LEVEL_IDS.includes(id));
     const saveSettings = () => localStorage.setItem(SET_KEY, JSON.stringify(settings));
 
@@ -28,33 +26,70 @@
     }
 
     // ---------- Загрузка слов ----------
-    // Каждый data/*.js объявляет const dictionary, поэтому выполняем их по одному в изолированной функции
     const cache = {};
+
+    // Способ 1: обычный fetch (работает на сервере и на GitHub Pages)
+    function fetchDict(id) {
+        return fetch(`data/${id}.js`)
+            .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
+            .then(text => new Function(text + '\n;return (typeof dictionary !== "undefined") ? dictionary : null;')())
+            .then(d => { if (!d) throw new Error('no dictionary'); return d; });
+    }
+
+    // Способ 2: запасной, для открытия файла прямо с диска (file://)
+    function iframeDict(id) {
+        return new Promise((resolve, reject) => {
+            const f = document.createElement('iframe');
+            f.style.display = 'none';
+            const token = 'dict_' + id + '_' + Date.now();
+            const timer = setTimeout(() => { cleanup(); reject(new Error('timeout')); }, 8000);
+            function cleanup() {
+                clearTimeout(timer);
+                window.removeEventListener('message', onMsg);
+                f.remove();
+            }
+            function onMsg(e) {
+                if (!e.data || e.data.token !== token) return;
+                cleanup();
+                if (e.data.dict) resolve(e.data.dict); else reject(new Error('no dictionary'));
+            }
+            window.addEventListener('message', onMsg);
+            f.srcdoc = '<script src="data/' + id + '.js"><\/script>' +
+                '<script>parent.postMessage({token:' + JSON.stringify(token) +
+                ',dict:(typeof dictionary!=="undefined"?dictionary:null)},"*");<\/script>';
+            document.body.appendChild(f);
+        });
+    }
+
+    function getDict(id) {
+        return fetchDict(id).catch(() => iframeDict(id));
+    }
+
+    function typeOf(w) {
+        return (w.type === 'verb' || w.type === 'noun') ? w.type : 'other';
+    }
+
     function loadLevel(id) {
         if (cache[id]) return cache[id];
-        const p = fetch(`data/${id}.js`)
-            .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
-            .then(text => {
-                const dict = new Function(text + '\n;return (typeof dictionary !== "undefined") ? dictionary : null;')();
-                if (!dict) throw new Error('no dictionary');
-                const out = [];
-                Object.keys(dict).forEach(k => {
-                    const m = String(k).match(/(\d+)/);
-                    const lesson = m ? parseInt(m[1], 10) : 0;
-                    (dict[k] || []).forEach(w => {
-                        if (!w || !w.de || !w.ru) return;
-                        out.push({
-                            key: w.de + '|' + w.ru,
-                            type: (w.type === 'verb' || w.type === 'noun') ? w.type : 'other',
-                            de: w.de, ru: w.ru,
-                            perfekt: w.perfekt || '', hint: w.hint || '',
-                            context: w.context || null,
-                            level: LEVELS[id].name, lesson: lesson
-                        });
+        const p = getDict(id).then(dict => {
+            const out = [];
+            Object.keys(dict).forEach(k => {
+                const m = String(k).match(/(\d+)/);
+                const lesson = m ? parseInt(m[1], 10) : 0;
+                (dict[k] || []).forEach(w => {
+                    if (!w || !w.de || !w.ru) return;
+                    out.push({
+                        key: w.de + '|' + w.ru,
+                        type: typeOf(w),
+                        de: w.de, ru: w.ru,
+                        perfekt: w.perfekt || '', hint: w.hint || '',
+                        context: w.context || null,
+                        level: LEVELS[id].name, lesson: lesson
                     });
                 });
-                return out;
             });
+            return out;
+        });
         cache[id] = p;
         p.catch(() => { delete cache[id]; });
         return p;
@@ -94,19 +129,12 @@
             };
             box.appendChild(b);
         });
-        $('hide-known').checked = !!settings.hideKnown;
     }
 
     $('cat-select').onchange = e => {
         settings.cat = e.target.value;
         saveSettings();
         updateInfo();
-    };
-    $('hide-known').onchange = e => { settings.hideKnown = e.target.checked; saveSettings(); updateInfo(); };
-    $('reset-btn').onclick = () => {
-        if (confirm('Сбросить отметки «выучено» для всех слов?')) {
-            known = new Set(); saveKnown(); updateInfo();
-        }
     };
 
     let infoToken = 0;
@@ -118,10 +146,8 @@
         try {
             const pool = await buildPool();
             if (t !== infoToken) return;
-            const k = pool.filter(w => known.has(w.key)).length;
-            const avail = settings.hideKnown ? pool.length - k : pool.length;
-            info.textContent = `Слов в выборке: ${pool.length} · выучено: ${k}` + (avail === 0 ? ' · повторять нечего' : '');
-            btn.disabled = avail === 0;
+            info.textContent = `Слов в выборке: ${pool.length}`;
+            btn.disabled = pool.length === 0;
         } catch (e) {
             if (t !== infoToken) return;
             info.textContent = 'Не удалось загрузить данные уровня. Проверьте папку data.';
@@ -129,27 +155,23 @@
     }
 
     // ---------- Сессия ----------
-    let queue = [], total = 0, knownCount = 0, againCount = 0, history = [];
-    let animating = false;
+    let deck = [], idx = 0, animating = false;
 
     async function startSession() {
         let pool;
         try { pool = await buildPool(); } catch (e) { return; }
-        const list = settings.hideKnown ? pool.filter(w => !known.has(w.key)) : pool;
-        if (!list.length) return;
-        queue = shuffle(list);
-        total = queue.length; knownCount = 0; againCount = 0; history = [];
+        if (!pool.length) return;
+        deck = shuffle(pool);
+        idx = 0;
         show('play');
         render();
     }
 
     const TYPE_NAMES = { verb: 'глагол', noun: 'существительное', other: 'другое' };
     const inner = $('card-inner'), wrap = $('card-wrap');
-    const stampKnow = $('stamp-know'), stampNo = $('stamp-no');
 
     function render() {
-        if (!queue.length) { finish(); return; }
-        const it = queue[0];
+        const it = deck[idx];
 
         // мгновенно возвращаем карточку лицом, без анимации переворота
         inner.style.transition = 'none';
@@ -174,94 +196,74 @@
             ctx.hidden = true;
         }
 
-        $('counter').textContent = `Осталось: ${queue.length}`;
-        $('progress-bar').style.width = (total ? (knownCount / total) * 100 : 0) + '%';
-        $('undo-btn').style.visibility = history.length ? 'visible' : 'hidden';
+        $('counter').textContent = `${idx + 1} / ${deck.length}`;
+        $('progress-bar').style.width = ((idx + 1) / deck.length * 100) + '%';
         if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-    }
-
-    function answer(dir) {
-        const it = queue.shift();
-        if (dir === 'know') {
-            const was = known.has(it.key);
-            known.add(it.key); saveKnown();
-            knownCount++;
-            history.push({ item: it, dir, was });
-        } else {
-            againCount++;
-            queue.splice(Math.min(queue.length, 6), 0, it);   // вернётся через несколько карточек
-            history.push({ item: it, dir });
-        }
-    }
-
-    function undo() {
-        if (animating) return;
-        const h = history.pop();
-        if (!h) return;
-        if (h.dir === 'know') {
-            if (!h.was) { known.delete(h.item.key); saveKnown(); }
-            knownCount--;
-        } else {
-            againCount--;
-            const i = queue.indexOf(h.item);
-            if (i > -1) queue.splice(i, 1);
-        }
-        queue.unshift(h.item);
-        render();
     }
 
     function finish() {
         show('done');
-        $('done-info').textContent =
-            `Слов выучено за сессию: ${knownCount}. Повторов («не знаю»): ${againCount}.`;
+        $('done-info').textContent = `Просмотрено карточек: ${deck.length}.`;
     }
 
-    // ---------- Жесты ----------
-    function setPos(dx) {
-        wrap.style.transform = `translateX(${dx}px) rotate(${dx / 18}deg)`;
-        const p = Math.min(1, Math.abs(dx) / 110);
-        stampKnow.style.opacity = dx > 0 ? p : 0;
-        stampNo.style.opacity = dx < 0 ? p : 0;
+    // ---------- Листание (как в TikTok): вверх — следующая, вниз — предыдущая ----------
+    function setPos(dy) {
+        wrap.style.transform = `translateY(${dy}px)`;
+        wrap.style.opacity = 1 - Math.min(0.4, Math.abs(dy) / 600);
     }
     function resetPos(animate) {
-        wrap.style.transition = animate ? 'transform .2s ease' : 'none';
+        wrap.style.transition = animate ? 'transform .2s ease, opacity .2s ease' : 'none';
         wrap.style.transform = '';
         wrap.style.opacity = 1;
-        stampKnow.style.opacity = 0;
-        stampNo.style.opacity = 0;
     }
-    function fly(dir) {
-        if (animating || !queue.length) return;
+
+    // dir = 1 → следующая, dir = -1 → предыдущая
+    function go(dir) {
+        if (animating) return;
+        if (dir === -1 && idx === 0) { resetPos(true); return; }   // дальше назад нельзя
         animating = true;
-        const sign = dir === 'know' ? 1 : -1;
-        stampKnow.style.opacity = dir === 'know' ? 1 : 0;
-        stampNo.style.opacity = dir === 'know' ? 0 : 1;
-        wrap.style.transition = 'transform .25s ease-in, opacity .25s ease-in';
-        wrap.style.transform = `translateX(${sign * window.innerWidth * 1.1}px) rotate(${sign * 25}deg)`;
+        wrap.style.transition = 'transform .22s ease-in, opacity .22s ease-in';
+        wrap.style.transform = `translateY(${-dir * window.innerHeight * 0.9}px)`;
         wrap.style.opacity = 0;
         setTimeout(() => {
-            answer(dir);
-            resetPos(false);
-            animating = false;
+            idx += dir;
+            if (idx >= deck.length) {                 // колода закончилась
+                idx = deck.length - 1;
+                resetPos(false);
+                animating = false;
+                finish();
+                return;
+            }
             render();
-        }, 240);
+            // новая карточка выезжает с противоположной стороны
+            wrap.style.transition = 'none';
+            wrap.style.transform = `translateY(${dir * 80}px)`;
+            wrap.style.opacity = 0;
+            void wrap.offsetWidth;
+            wrap.style.transition = 'transform .22s ease-out, opacity .22s ease-out';
+            wrap.style.transform = '';
+            wrap.style.opacity = 1;
+            setTimeout(() => { animating = false; wrap.style.transition = ''; }, 230);
+        }, 220);
     }
+
     function toggleFlip() { inner.classList.toggle('flipped'); }
 
     let drag = null;
     wrap.addEventListener('pointerdown', e => {
         if (animating || e.target.closest('button')) return;
-        drag = { x: e.clientX, y: e.clientY, dx: 0, moved: false, id: e.pointerId };
+        drag = { x: e.clientX, y: e.clientY, dy: 0, moved: false, id: e.pointerId };
         try { wrap.setPointerCapture(e.pointerId); } catch (err) {}
         wrap.style.transition = 'none';
     });
     wrap.addEventListener('pointermove', e => {
         if (!drag || e.pointerId !== drag.id) return;
         const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
-        if (!drag.moved && Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy)) drag.moved = true;
+        if (!drag.moved && Math.abs(dy) > 8 && Math.abs(dy) > Math.abs(dx)) drag.moved = true;
         if (!drag.moved) return;
-        drag.dx = dx;
-        setPos(dx);
+        // на первой карточке вниз тянется с сопротивлением
+        drag.dy = (idx === 0 && dy > 0) ? dy * 0.3 : dy;
+        setPos(drag.dy);
     });
     wrap.addEventListener('pointerup', e => {
         if (!drag || e.pointerId !== drag.id) return;
@@ -271,24 +273,31 @@
             resetPos(false);
             return;
         }
-        if (Math.abs(d.dx) > Math.min(110, wrap.offsetWidth * 0.3)) fly(d.dx > 0 ? 'know' : 'again');
+        if (Math.abs(d.dy) > Math.min(90, wrap.offsetHeight * 0.2)) go(d.dy < 0 ? 1 : -1);
         else resetPos(true);
     });
     wrap.addEventListener('pointercancel', () => { drag = null; resetPos(true); });
 
-    $('undo-btn').onclick = undo;
     $('exit-btn').onclick = () => { show('setup'); updateInfo(); };
     $('start-btn').onclick = startSession;
     $('again-btn').onclick = startSession;
     $('to-setup-btn').onclick = () => { show('setup'); updateInfo(); };
 
-    // Клавиатура (для компьютера): стрелки влево/вправо и пробел
+    // Компьютер: стрелки вверх/вниз (или вправо/влево), пробел — перевернуть, колесо мыши — листать
     document.addEventListener('keydown', e => {
         if (screens.play.hidden) return;
-        if (e.key === 'ArrowRight') fly('know');
-        else if (e.key === 'ArrowLeft') fly('again');
-        else if (e.key === ' ' || e.key === 'ArrowUp' || e.key === 'ArrowDown') { e.preventDefault(); toggleFlip(); }
+        if (e.key === 'ArrowDown' || e.key === 'ArrowRight') { e.preventDefault(); go(1); }
+        else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') { e.preventDefault(); go(-1); }
+        else if (e.key === ' ') { e.preventDefault(); toggleFlip(); }
     });
+    let wheelLock = 0;
+    document.addEventListener('wheel', e => {
+        if (screens.play.hidden || Math.abs(e.deltaY) < 20) return;
+        const now = Date.now();
+        if (now - wheelLock < 500) return;
+        wheelLock = now;
+        go(e.deltaY > 0 ? 1 : -1);
+    }, { passive: true });
 
     // ---------- Озвучка (как в тренажёре) ----------
     const VOICE_KEY = 'germanVoiceName';
@@ -313,7 +322,7 @@
         window.speechSynthesis.onvoiceschanged = refreshVoice;
     }
     $('audio-btn').onclick = () => {
-        const it = queue[0];
+        const it = deck[idx];
         if (!it || !('speechSynthesis' in window)) return;
         if (!germanVoice) refreshVoice();
         if (!germanVoice) { alert('На устройстве нет немецкого голоса. Установите его в настройках синтеза речи.'); return; }
