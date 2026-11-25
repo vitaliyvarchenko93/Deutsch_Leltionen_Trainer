@@ -317,7 +317,6 @@ const dictionary = {
     { type: "other", de: "außen", ru: "снаружи" },
     { type: "other", de: "innen", ru: "внутри" },
     { type: "other", de: "vorher", ru: "раньше, до этого" },
-    { type: "other", de: "früher", ru: "раньше, прежде" },
     { type: "other", de: "gern geschehen", ru: "не за что, пожалуйста" },
     { type: "other", de: "betrunken", ru: "пьяный" },
     { type: "other", de: "senkrecht", ru: "вертикальный, отвесный" },
