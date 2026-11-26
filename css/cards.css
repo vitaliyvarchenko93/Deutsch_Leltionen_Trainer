@@ -161,3 +161,7 @@ button { font-family: inherit; }
     -webkit-user-drag: none;
     -webkit-touch-callout: none;
 }
+/* Выпадающий список урока: когда недоступен */
+.cat-select:disabled { opacity: .55; cursor: default; }
+.cat-select { text-overflow: ellipsis; white-space: nowrap; overflow: hidden; }
+#lesson-select { margin-bottom: 4px; }
