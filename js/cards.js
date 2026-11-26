@@ -11,9 +11,10 @@
         catch (e) { return def; }
     }
 
-    let settings = Object.assign({ cat: 'verb', levels: LEVEL_IDS.slice() }, load(SET_KEY, {}));
+    let settings = Object.assign({ cat: 'verb', levels: LEVEL_IDS.slice(), lesson: 0 }, load(SET_KEY, {}));
     if (!['verb', 'noun', 'other', 'all'].includes(settings.cat)) settings.cat = 'verb';
     settings.levels = (settings.levels || []).filter(id => LEVEL_IDS.includes(id));
+    settings.lesson = parseInt(settings.lesson, 10) || 0;
     const saveSettings = () => localStorage.setItem(SET_KEY, JSON.stringify(settings));
 
     function shuffle(a) {
@@ -69,6 +70,13 @@
         return (w.type === 'verb' || w.type === 'noun') ? w.type : 'other';
     }
 
+    // Название урока: из ключа данных («Lektion 3: Название»), иначе из levels.js
+    function lessonTitle(id, key, num) {
+        const m = String(key).match(/^\s*(?:Урок|Lektion)\s*\d+\s*[:.\-–]\s*(.+)$/i);
+        if (m) return m[1].trim();
+        return (LEVELS[id].lessons && LEVELS[id].lessons[num - 1]) || '';
+    }
+
     function loadLevel(id) {
         if (cache[id]) return cache[id];
         const p = getDict(id).then(dict => {
@@ -76,6 +84,7 @@
             Object.keys(dict).forEach(k => {
                 const m = String(k).match(/(\d+)/);
                 const lesson = m ? parseInt(m[1], 10) : 0;
+                const title = lessonTitle(id, k, lesson);
                 (dict[k] || []).forEach(w => {
                     if (!w || !w.de || !w.ru) return;
                     out.push({
@@ -84,7 +93,7 @@
                         de: w.de, ru: w.ru,
                         perfekt: w.perfekt || '', hint: w.hint || '',
                         context: w.context || null,
-                        level: LEVELS[id].name, lesson: lesson
+                        level: LEVELS[id].name, lesson: lesson, lessonTitle: title
                     });
                 });
             });
@@ -98,8 +107,10 @@
     async function buildPool() {
         const ids = LEVEL_IDS.filter(id => settings.levels.includes(id));
         const lists = await Promise.all(ids.map(loadLevel));
+        const onlyLesson = (ids.length === 1 && settings.lesson) ? settings.lesson : 0;
         const seen = new Set(), pool = [];
         lists.forEach(list => list.forEach(w => {
+            if (onlyLesson && w.lesson !== onlyLesson) return;
             if (seen.has(w.key)) return;
             seen.add(w.key);
             if (settings.cat !== 'all' && w.type !== settings.cat) return;
@@ -125,14 +136,55 @@
             b.onclick = () => {
                 const i = settings.levels.indexOf(id);
                 if (i >= 0) settings.levels.splice(i, 1); else settings.levels.push(id);
+                settings.lesson = 0;                 // при смене уровней урок сбрасываем
                 saveSettings(); renderChips(); updateInfo();
             };
             box.appendChild(b);
         });
     }
 
+    // Список уроков: доступен, когда выбран ровно один уровень
+    async function refreshLessons() {
+        const sel = $('lesson-select');
+        sel.innerHTML = '';
+        if (settings.levels.length !== 1) {
+            const o = document.createElement('option');
+            o.value = 0;
+            o.textContent = settings.levels.length ? 'Все уроки (выберите один уровень)' : 'Выберите уровень';
+            sel.appendChild(o);
+            sel.disabled = true;
+            settings.lesson = 0;
+            return;
+        }
+        const id = settings.levels[0];
+        const words = await loadLevel(id);
+        if (settings.levels.length !== 1 || settings.levels[0] !== id) return;   // выбор уже сменился
+
+        const lessons = new Map();
+        words.forEach(w => { if (w.lesson && !lessons.has(w.lesson)) lessons.set(w.lesson, w.lessonTitle); });
+
+        const all = document.createElement('option');
+        all.value = 0; all.textContent = 'Все уроки';
+        sel.appendChild(all);
+        [...lessons.keys()].sort((a, b) => a - b).forEach(n => {
+            const o = document.createElement('option');
+            o.value = n;
+            const t = lessons.get(n);
+            o.textContent = `Lektion ${n}${t ? ': ' + t : ''}`;
+            sel.appendChild(o);
+        });
+        sel.disabled = false;
+        if (!lessons.has(settings.lesson)) settings.lesson = 0;
+        sel.value = settings.lesson;
+    }
+
     $('cat-select').onchange = e => {
         settings.cat = e.target.value;
+        saveSettings();
+        updateInfo();
+    };
+    $('lesson-select').onchange = e => {
+        settings.lesson = parseInt(e.target.value, 10) || 0;
         saveSettings();
         updateInfo();
     };
@@ -141,12 +193,20 @@
     async function updateInfo() {
         const t = ++infoToken, info = $('setup-info'), btn = $('start-btn');
         btn.disabled = true;
-        if (!settings.levels.length) { info.textContent = 'Выберите хотя бы один уровень.'; return; }
+        if (!settings.levels.length) {
+            info.textContent = 'Выберите хотя бы один уровень.';
+            refreshLessons();
+            return;
+        }
         info.textContent = 'Загрузка слов…';
         try {
+            await refreshLessons();
+            if (t !== infoToken) return;
             const pool = await buildPool();
             if (t !== infoToken) return;
-            info.textContent = `Слов в выборке: ${pool.length}`;
+            info.textContent = pool.length
+                ? `Слов в выборке: ${pool.length}`
+                : 'В этой выборке нет слов. Попробуйте другую часть речи или урок.';
             btn.disabled = pool.length === 0;
         } catch (e) {
             if (t !== infoToken) return;
@@ -337,4 +397,4 @@
     // ---------- Старт ----------
     renderChips();
     updateInfo();
-})(); 
+})();
